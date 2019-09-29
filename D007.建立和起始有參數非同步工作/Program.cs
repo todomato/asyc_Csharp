@@ -51,5 +51,15 @@ namespace D007.建立和起始有參數非同步工作
             Console.WriteLine("工作執行緒 #{0}", Thread.CurrentThread.ManagedThreadId);
             Thread.Sleep(500);
         }
+
+
+        //static int 我的非同步方法(object state)
+        //{
+        //    Console.WriteLine($"執行 非同步方法 有 傳入參數的工作，參數:{state.ToString()}");
+        //    Console.WriteLine("工作執行緒 #{0}", Thread.CurrentThread.ManagedThreadId);
+        //    Thread.Sleep(500);
+
+        //    return 1;
+        //}
     }
 }

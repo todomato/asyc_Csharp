@@ -42,6 +42,7 @@ namespace C006.TAP以工作為基礎的非同步模式
 
             Console.WriteLine($"取得非同步方法結果 (Thread={Thread.CurrentThread.ManagedThreadId}):{DateTime.Now}");
             string result = task.Result;    //沒結束 thread就會block住, winform就會直接發生deadlock
+            // 容易dead lock原因 :  static 物件存取
             //console沒有實作同步內容(同步)
             //.net core 都是console 不會dead lock, 都拿掉靜態物件,為了讓非同步更好,所以靠DI注意context物件
 

@@ -6,6 +6,7 @@ namespace D011.工作啟動與狀態
 {
     class 承諾類型的工作
     {
+        //適用舊的.net1.1 把code轉成 task處理時才可能....
         static void Main(string[] args)
         {
             string lastStatus = "";
@@ -43,12 +44,12 @@ namespace D011.工作啟動與狀態
             TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
             monitorTask = tcs.Task;
 
-            Thread.Sleep(1000);
+            Thread.Sleep(1000); //因為不是非同步
 
             var key = Console.ReadKey();
             if (key.KeyChar == 'e')
             {
-                tcs.SetResult(null);
+                tcs.SetResult(null);    //給他一個值 給予承諾
                 Thread.Sleep(500);
                 IsBegin = false;
             }

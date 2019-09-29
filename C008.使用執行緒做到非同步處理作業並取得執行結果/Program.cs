@@ -21,7 +21,7 @@ namespace C008.使用執行緒做到非同步處理作業並取得執行結果
                 Console.WriteLine($"執行緒 1 的 ID={Thread.CurrentThread.ManagedThreadId}");
                 for (int i = 0; i < 2000000; i++)
                 {
-                    lock (lockObj)    //拿掉lock 又出錯, 表示int 沒有thread safty
+                    lock (lockObj)    //拿掉lock 會出錯, 表示int共用 沒有thread safty
                     {
                         shareData += 1;
                     }

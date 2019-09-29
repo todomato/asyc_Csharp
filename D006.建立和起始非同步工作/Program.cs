@@ -30,8 +30,8 @@ namespace D006.建立和起始非同步工作
             // 方法3 - 使用 Task.Factory 靜態方法產生工作，這些 Factory 方法用於建立及設定 Task 和 Task<TResult> 執行個體。
             //         等同於建立藉由呼叫無參數的類別 TaskFactory.TaskFactory() 建構函式
             // 使用 Task.Factory 靜態方法產生的非同步工作，會立即開始執行
-            Task.Factory.StartNew(我的非同步方法);
-            Task.Factory.StartNew(() => 我的非同步方法());
+            Task.Factory.StartNew(我的非同步方法);     //傳method
+            Task.Factory.StartNew(() => 我的非同步方法()); //傳call back進去
 
             // 方法4 - 將指定在 ThreadPool 執行工作排入佇列，並傳回該工作的工作控制代碼    .NET 4.5 的 Task 類別新增了靜態方法 Run。
             //         Run 方法可讓您建立及執行工作的單一方法呼叫中，簡單的替代方案 StartNew 方法。 

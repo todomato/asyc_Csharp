@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace C001.APM封鎖應用程式執行AsyncWaitHandle
 {
+    //最原始的寫法APM
+
     // 使用 AsyncWaitHandle 封鎖應用程式執行
     // https://msdn.microsoft.com/zh-tw/library/ms228962(v=vs.110).aspx
     //

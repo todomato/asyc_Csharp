@@ -159,45 +159,96 @@ namespace D008.利用TAP工作建立大量並行工作練習
                 //修改
                 tasks[i] = Task.Run(async () =>
                 {
-                    var task1 = GetPageAsync(index, 1);
-                    var task2 = GetPageAsync(index, 2);
-                    await Task.WhenAll(task1, task2);
+                    Task task1 = GetPageAsync(index, 1);
+                    Task task2 = GetPageAsync(index, 2);
+
+                    try
+                    {
+                        await Task.WhenAll(task1, task2);
+                    }
+                    catch (Exception ex)
+                    {
+                        //throw;
+                        Console.BackgroundColor = ConsoleColor.Red;
+                        Console.WriteLine(ex.Message);
+                        Console.BackgroundColor = ConsoleColor.Black;
+                    }
+
+                    //var detail = Task.WhenAll(task1, task2);
+                    //if (detail.IsFaulted)
+                    //{
+                    //    Console.WriteLine($"有thread爆掉:{index}");
+                    //    Console.WriteLine(detail.Exception);
+                    //}
                 });
 
             }
 
-            var task = Task.WhenAll(tasks); //因為沒有await 所以回繼續往下跑
+            //var task = Task.WhenAll(tasks); //因為沒有await 所以回繼續往下跑
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.Message);
+                Console.BackgroundColor = ConsoleColor.Black;
+            }
+           
             //await 相比, task彈性就很大,有很多fn可以用
 
             //展示等待時還有其他事情可以做
-            while (!task.IsCompleted)
-            {
-                Console.WriteLine("*");
-                await Task.Delay(1000);
-            }
+            //while (!task.IsCompleted)
+            //{
+            //    Console.WriteLine("*");
+            //    await Task.Delay(1000);
+            //}
+
+            //if(task.IsFaulted)
+            //{
+            //    Console.WriteLine($"有程式爆掉:{task}");
+            //    await Task.Delay(1000);
+            //}
 
             sw.Stop();
             Console.WriteLine($"總執行時間 {sw.ElapsedMilliseconds} 毫秒!");
 
             Console.WriteLine("Press any key to continue...");
             Console.ReadKey();
+
+           
         }
 
-        private static async Task GetPageAsync(string index, int i)
+        static string testpage = "";
+        private static async Task<string> GetPageAsync(string index, int i)
         {
-            HttpClient client = new HttpClient();   //如果在外面就是共用
-            var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
-
-            Console.WriteLine($"{index}-{i} 測試 (TID: {tid}) >>>> {DateTime.Now}");
-            // task 是安全的 部會因為一個掛掉全掛
-            if (index.IndexOf("5") >= 0)
+            //不是家task舊式非同步
+            if (!string.IsNullOrEmpty(testpage))
             {
-                throw new ArgumentException("5 is not valid");
+                return await Task.FromResult("123");
+            }
+            else
+            {
+                HttpClient client = new HttpClient();   //如果在外面就是共用
+                var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
+
+                Console.WriteLine($"{index}-{i} 測試 (TID: {tid}) >>>> {DateTime.Now}");
+                // task 是安全的 部會因為一個掛掉全掛
+                if (index.IndexOf("5") >= 0)
+                {
+                    //throw new ArgumentException("5 is not valid");
+                    url = url + "123";
+                }
+
+                var result = await client.GetStringAsync(url); //會blocking thread
+                Console.WriteLine($"{index}-{i} 測試 (TID: {tid}) ==== {result}");
+                Console.WriteLine($"{index}-{i} 測試 (TID: {tid}) <<<< {DateTime.Now}");
+
+                testpage = result;
+                return await Task.FromResult(testpage);
             }
 
-            var result = await client.GetStringAsync(url); //會blocking thread
-            Console.WriteLine($"{index}-{i} 測試 (TID: {tid}) ==== {result}");
-            Console.WriteLine($"{index}-{i} 測試 (TID: {tid}) <<<< {DateTime.Now}");
         }
     }
 }

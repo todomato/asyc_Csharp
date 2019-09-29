@@ -11,7 +11,7 @@ namespace D008.利用TAP工作建立大量並行工作練習
     class Program
     {
         //io bound 才會這麼快
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             string host = "https://lobworkshop.azurewebsites.net";
             string path = "/api/RemoteSource/Source3";
@@ -49,37 +49,98 @@ namespace D008.利用TAP工作建立大量並行工作練習
             //    });
             //}
 
-            // 這整個都是io bound 一條thread 都算
-            // 多使用作業系統的thread 去想辦法有效應用,不用application thread
+            //// 這整個都是io bound 一條thread 都算
+            //// 多使用作業系統的thread 去想辦法有效應用,不用application thread
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    var index = string.Format("{0:D2}", (i + 1));
+
+            //    //修改
+            //    Task.Run(async () =>
+            //    {
+            //        HttpClient client = new HttpClient();   //如果在外面就是共用
+            //        var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
+
+            //        Console.WriteLine($"{index}-1 測試 (TID: {tid}) >>>> {DateTime.Now}");
+            //        var result = await client.GetStringAsync(url); //IO bound 靠外部給我東西
+            //        //用await 的話下面兩條,有可能是啟用其他thread來執行
+            //        //await 可以用non blocking等待, thread不會被占用
+            //        Console.WriteLine($"{index}-1 測試 (TID: {tid}) ==== {result}");
+            //        Console.WriteLine($"{index}-1 測試 (TID: {tid}) <<<< {DateTime.Now}");
+
+            //    });
+
+            //    Task.Run(async () =>
+            //    {
+            //        HttpClient client = new HttpClient();   //如果在外面就是共用
+            //        var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
+
+            //        Console.WriteLine($"{index}-2 測試 (TID: {tid}) >>>> {DateTime.Now}");
+            //        var result = await client.GetStringAsync(url); //會blocking thread
+            //        Console.WriteLine($"{index}-2 測試 (TID: {tid}) ==== {result}");
+            //        Console.WriteLine($"{index}-2 測試 (TID: {tid}) <<<< {DateTime.Now}");
+            //    });
+            //}
+
+            //// 這整個都是io bound 一條thread 都算
+            //// 多使用作業系統的thread 去想辦法有效應用,不用application thread
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    var index = string.Format("{0:D2}", (i + 1));
+
+            //    //修改
+            //    Task.Run(async () =>
+            //    {
+            //        HttpClient client = new HttpClient();   //如果在外面就是共用
+            //        var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
+            //        var task1 = client.GetStreamAsync(url); //使用task
+            //        var task2 = client.GetStreamAsync(url); //使用task
+
+            //        //Task.WaitAll(); //回傳void, 等是用  blocking thread等
+            //        await Task.WhenAll(task1, task2);   //用await聰明地等, 所以下面的.Result 已經都等完了
+
+            //        Console.WriteLine($"{index}-1 測試 (TID: {tid}) >>>> {DateTime.Now}");
+            //        //用await 的話下面兩條,有可能是啟用其他thread來執行
+            //        //await 可以用non blocking等待, thread不會被占用
+            //        Console.WriteLine($"{index}-1 測試 (TID: {tid}) ==== {task1.Result}");
+            //        Console.WriteLine($"{index}-1 測試 (TID: {tid}) <<<< {DateTime.Now}");
+
+            //    });
+
+            //}
+
+            var tasks = new Task[10];
             for (int i = 0; i < 10; i++)
             {
                 var index = string.Format("{0:D2}", (i + 1));
 
                 //修改
-                Task.Run(async () =>
+                tasks[i] = Task.Run(async () =>
                 {
                     HttpClient client = new HttpClient();   //如果在外面就是共用
                     var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
+                    //var task1 = await client.GetStreamAsync(url); //使用task
+                    //var task2 = client.GetStreamAsync(url); //使用task
+
+                    //Task.WaitAll(); //回傳void, 等是用  blocking thread等
+                    //await Task.WhenAll(task1, task2);   //用await聰明地等, 所以下面的.Result 已經都等完了
 
                     Console.WriteLine($"{index}-1 測試 (TID: {tid}) >>>> {DateTime.Now}");
-                    var result = await client.GetStringAsync(url); //IO bound 靠外部給我東西
                     //用await 的話下面兩條,有可能是啟用其他thread來執行
                     //await 可以用non blocking等待, thread不會被占用
-                    Console.WriteLine($"{index}-1 測試 (TID: {tid}) ==== {result}");
+                    var result = await client.GetStringAsync(url); //會blocking thread
+                    Console.WriteLine($"{index}-2 測試 (TID: {tid}) ==== {result}");
                     Console.WriteLine($"{index}-1 測試 (TID: {tid}) <<<< {DateTime.Now}");
 
                 });
 
-                Task.Run(async () =>
-                {
-                    HttpClient client = new HttpClient();   //如果在外面就是共用
-                    var tid = String.Format("{0:D2}", Thread.CurrentThread.ManagedThreadId);
+            }
 
-                    Console.WriteLine($"{index}-2 測試 (TID: {tid}) >>>> {DateTime.Now}");
-                    var result = await client.GetStringAsync(url); //會blocking thread
-                    Console.WriteLine($"{index}-2 測試 (TID: {tid}) ==== {result}");
-                    Console.WriteLine($"{index}-2 測試 (TID: {tid}) <<<< {DateTime.Now}");
-                });
+            var task = Task.WhenAll(tasks);
+            while (!task.IsCompleted)
+            {
+                Console.WriteLine("*");
+                await Task.Delay(1000);
             }
 
             Console.WriteLine("Press any key to continue...");
